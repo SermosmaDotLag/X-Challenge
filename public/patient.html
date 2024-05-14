@@ -18,23 +18,99 @@
             video{
                 display: none;
             }
+            #label-container{
+                display:none;
+            }
         </style>
         <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
         <script type="module" src="mano.js"></script>
+        <script src="tf.min.js"></script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script> -->
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
+        <script src="teachablemachine-image.min.js"></script>
+        <script type="text/javascript">
+            let model, webcam, labelContainer, maxPredictions;
+            let lastDetectedObject = '';
+            let detections = {
+                "Pulgar": [],
+                "Palma": []
+            };
+            let elements = document.getElementsByClassName("output");
+
+
+            async function init() {
+                const modelURL = 'model.json';
+                const metadataURL = 'metadata.json';
+
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+
+                const flip = true;
+                webcam = new tmImage.Webcam(390, 240, flip);
+                await webcam.setup();
+                await webcam.play();
+                window.requestAnimationFrame(loop);
+
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
+                labelContainer = document.getElementById("label-container");
+                for (let i = 0; i < maxPredictions; i++) {
+                    labelContainer.appendChild(document.createElement("div"));
+                }
+            }
+
+            async function loop() {
+                webcam.update();
+                await predict();
+                window.requestAnimationFrame(loop);
+            }
+
+            async function predict() {
+            const prediction = await model.predict(webcam.canvas);
+
+            for (let i = 0; i < maxPredictions; i++) {
+                const classPrediction =
+                    prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+                labelContainer.childNodes[i].innerHTML = classPrediction;
+            }
+
+            for (let i = 0; i < maxPredictions; i++) {
+                if (prediction[i].probability > 0.5) {
+                    const detectedObject = prediction[i].className;
+                    if (detectedObject !== lastDetectedObject) {
+                        detections[detectedObject].push(detectedObject);
+                        const inputElement = document.getElementById("messageInput");
+                        inputElement.value += detectedObject + ' '; // Añade el gesto detectado al valor actual del input
+                        lastDetectedObject = detectedObject;
+                    }
+                    break;
+                }
+            }
+        }
+        </script>
     </head>
     <body>
+
+    <div id="label-container"></div>
+    <!-- <div id="output"></div>  -->
+
+
+
         <div class="row justify-content-end me-3">
+            
             <div class="avatar bg-dark text-white p-5">AVATAR</div>
             <div class="col-md-3">
+                <button type="button" onclick="init()">Start</button>
+
                 <div class="mt-3 me-3">
                     <div class="card bg-dark webcam">
                         <div class="card-body">
                             <div class="container">
                                 <video class="input_video"></video>
-                                <canvas class="output_canvas" width="410px" height="265px"></canvas>
+                                <div id="webcam-container"></div>
                             </div>
                         </div>
                     </div>
