@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reconocimiento de voz</title>
+</head>
+<body>
+<h1>Reconocimiento de voz</h1>
+<div id="transcription"></div>
+<button id="startButton">Iniciar reconocimiento de voz</button>
+<button id="stopButton" style="display:none;">Detener reconocimiento de voz</button>
+<script>
+    const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+    recognition.interimResults = true;
+    recognition.lang = 'es-ES';
+
+    const transcriptionElement = document.getElementById('transcription');
+    const startButton = document.getElementById('startButton');
+    const stopButton = document.getElementById('stopButton');
+
+    startButton.addEventListener('click', () => {
+        recognition.start();
+        startButton.style.display = 'none';
+        stopButton.style.display = 'inline-block';
+    });
+
+    stopButton.addEventListener('click', () => {
+        recognition.stop();
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+    });
+
+    recognition.addEventListener('result', (event) => {
+        const transcript = Array.from(event.results)
+            .map(result => result[0].transcript)
+            .join('');
+
+        transcriptionElement.innerHTML = transcript;
+    });
+
+    recognition.addEventListener('end', () => {
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
+    });
+</script>
+</body>
+</html>
