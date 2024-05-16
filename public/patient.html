@@ -35,61 +35,75 @@
         <script type="text/javascript">
             let model, webcam, labelContainer, maxPredictions;
             let lastDetectedObject = '';
-            let detections = {
-                "Pulgar": [],
-                "Palma": []
-            };
+            let letters = ["A","B","C","NONE","CH","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U / V","W","X","Y","Z"];
+            let detections = {};
+        
+            // Inicializar las claves del objeto 'detections'
+            letters.forEach(letter => {
+                detections[letter] = [];
+            });
+        
             let elements = document.getElementsByClassName("output");
-
+            let lastDetectedLetter = ''; // Variable para almacenar la última letra detectada
 
             async function init() {
                 const modelURL = 'model.json';
                 const metadataURL = 'metadata.json';
-
+        
                 model = await tmImage.load(modelURL, metadataURL);
                 maxPredictions = model.getTotalClasses();
-
+        
                 const flip = true;
                 webcam = new tmImage.Webcam(390, 240, flip);
                 await webcam.setup();
                 await webcam.play();
                 window.requestAnimationFrame(loop);
-
+        
                 document.getElementById("webcam-container").appendChild(webcam.canvas);
                 labelContainer = document.getElementById("label-container");
                 for (let i = 0; i < maxPredictions; i++) {
                     labelContainer.appendChild(document.createElement("div"));
                 }
             }
-
+        
             async function loop() {
                 webcam.update();
                 await predict();
                 window.requestAnimationFrame(loop);
             }
-
+        
             async function predict() {
-            const prediction = await model.predict(webcam.canvas);
+                const prediction = await model.predict(webcam.canvas);
 
-            for (let i = 0; i < maxPredictions; i++) {
-                const classPrediction =
-                    prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-                labelContainer.childNodes[i].innerHTML = classPrediction;
-            }
-
-            for (let i = 0; i < maxPredictions; i++) {
-                if (prediction[i].probability > 0.5) {
-                    const detectedObject = prediction[i].className;
-                    if (detectedObject !== lastDetectedObject) {
-                        detections[detectedObject].push(detectedObject);
-                        const inputElement = document.getElementById("messageInput");
-                        inputElement.value += detectedObject + ' '; // Añade el gesto detectado al valor actual del input
-                        lastDetectedObject = detectedObject;
+                for (let i = 0; i < maxPredictions; i++) {
+                    if (prediction[i].probability > 0.5) {
+                        const detectedLetter = prediction[i].className;
+                        if (letters.includes(detectedLetter) && detectedLetter !== lastDetectedLetter) {
+                            detections[detectedLetter].push(detectedLetter);
+                            const inputElement = document.getElementById("messageInput");
+                            inputElement.value += detectedLetter + ' '; // Añade la letra detectada al valor actual del input
+                            lastDetectedLetter = detectedLetter; // Actualiza la última letra detectada
+                        }
+                        break;
                     }
-                    break;
+                }
+
+                // Actualizar la interfaz
+                updateInterface();
+            }
+        
+            function updateInterface() {
+                // Actualizar los elementos de la interfaz con las letras detectadas
+                for (const key in detections) {
+                    if (detections.hasOwnProperty(key)) {
+                        const letters = detections[key].join(' ');
+                        const element = document.getElementById(key);
+                        if (element) {
+                            element.innerText = letters;
+                        }
+                    }
                 }
             }
-        }
         </script>
     </head>
     <body>
