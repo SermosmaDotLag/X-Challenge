@@ -1,39 +1,39 @@
 function initializeChat() {
     // Inicializa el reconocimiento de voz
     const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
-    recognition.interimResults = true; // Permite resultados intermedios mientras se habla
-    recognition.lang = 'es-ES'; // Establece el idioma del reconocimiento como español
+    recognition.interimResults = true; // Permite resultados intermedios
+    recognition.lang = 'es-ES'; // Establece el idioma a español
 
-    // Obtiene referencias a los elementos del DOM necesarios
-    const transcriptionElement = document.getElementById('transcription'); // Elemento donde se muestra la transcripción de voz
-    const startButton = document.getElementById('startButton'); // Botón para iniciar el reconocimiento de voz
-    const stopButton = document.getElementById('stopButton'); // Botón para detener el reconocimiento de voz
-    const messageForm = document.getElementById('messageForm'); // Formulario de envío de mensaje
-    const messageInput = document.getElementById('messageInput'); // Campo de entrada de mensaje
-    const messagesList = document.getElementById('messages'); // Lista de mensajes
+    // Obtiene referencias a los elementos del DOM
+    const transcriptionElement = document.getElementById('transcription');
+    const startButton = document.getElementById('startButton');
+    const stopButton = document.getElementById('stopButton');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const messagesList = document.getElementById('messages');
+    // Genera un ID único para el cliente
+    const clientId = Math.random().toString(36).substr(2, 9);
 
-    // Event listener para iniciar el reconocimiento de voz al hacer clic en el botón de inicio
+    // Maneja el evento de clic en el botón de inicio
     startButton.addEventListener('click', () => {
         recognition.start();
-        startButton.style.display = 'none'; // Oculta el botón de inicio
-        stopButton.style.display = 'inline-block'; // Muestra el botón de detener
+        startButton.style.display = 'none';
+        stopButton.style.display = 'inline-block';
     });
 
-    // Event listener para detener el reconocimiento de voz al hacer clic en el botón de detener
+    // Maneja el evento de clic en el botón de detener
     stopButton.addEventListener('click', () => {
         recognition.stop();
-        startButton.style.display = 'inline-block'; // Muestra el botón de inicio
-        stopButton.style.display = 'none'; // Oculta el botón de detener
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
     });
 
-    // Verifica si el elemento de transcripción está presente en el DOM
+    // Agrega un event listener para el resultado del reconocimiento de voz
     if (transcriptionElement) {
-        // Event listener para mostrar la transcripción en tiempo real durante el reconocimiento de voz
         recognition.addEventListener('result', (event) => {
             const transcript = Array.from(event.results)
                 .map(result => result[0].transcript)
                 .join('');
-    
             messageInput.value = transcript;
             transcriptionElement.innerHTML = transcript;
         });
@@ -41,95 +41,73 @@ function initializeChat() {
         console.error('El elemento con ID transcription no se encontró en el DOM.');
     }
 
-    // Event listener para restablecer los botones al finalizar el reconocimiento de voz
+    // Maneja el evento de finalización del reconocimiento de voz
     recognition.addEventListener('end', () => {
-        startButton.style.display = 'inline-block'; // Muestra el botón de inicio
-        stopButton.style.display = 'none'; // Oculta el botón de detener
+        startButton.style.display = 'inline-block';
+        stopButton.style.display = 'none';
     });
 
-    // Event listener para enviar el mensaje al hacer clic en enviar en el formulario
+    // Maneja el envío del formulario de mensajes
     messageForm.addEventListener('submit', (event) => {
         event.preventDefault();
         const message = messageInput.value;
-        sendMessage(message); // Llama a la función sendMessage para enviar el mensaje
+        sendMessage(message);
     });
 
     // Inicializa una conexión WebSocket
     const ws = new WebSocket('ws://localhost:3000');
 
-    // Event listener para manejar errores en la conexión WebSocket
+    // Maneja errores del WebSocket
     ws.onerror = function(event) {
         console.error('WebSocket error:', event);
     };
 
-    // Event listener para procesar los resultados del reconocimiento de voz
+    // Maneja el resultado final del reconocimiento de voz
     recognition.addEventListener('result', (event) => {
         const transcript = Array.from(event.results)
             .map(result => result[0].transcript)
             .join('');
-    
         messageInput.value = transcript;
         transcriptionElement.innerHTML = transcript;
-    
-        // Envía automáticamente el mensaje después de que el usuario haya terminado de hablar
+
         if (event.results[0].isFinal) {
             sendMessage(transcript);
         }
     });
-    
-    // Función para enviar un mensaje
+
+    // Función para enviar mensajes
     function sendMessage(message) {
-        // Crea un nuevo elemento div para contener el mensaje
+        const fullMessage = `${clientId}##${message}`;
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('row', 'justify-content-end');
-        
-        // Crea un nuevo elemento p para el mensaje
+
         const messageParagraph = document.createElement('p');
         messageParagraph.classList.add('bg-blue', 'border', 'p-3', 'w-50', 'rounded-pill');
         messageParagraph.textContent = message;
-    
-        // Agrega el párrafo al div
+
         messageDiv.appendChild(messageParagraph);
-        
-        // Agrega el div a la lista de mensajes
         messagesList.appendChild(messageDiv);
-        
-        // Envía el mensaje a través del WebSocket
-        ws.send(message);
-        
-        // Limpia el campo de entrada después de enviar el mensaje
-        messageInput.value = '';
+
+        ws.send(fullMessage); // Envía el mensaje a través del WebSocket
+        messageInput.value = ''; // Limpia el campo de entrada de mensaje
     }
-    
-    // Event listener para manejar los mensajes recibidos a través del WebSocket
+
+    // Maneja la recepción de mensajes del WebSocket
     ws.onmessage = function(event) {
         const message = event.data;
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('row', 'justify-content-end');
-    
-        // Crea un nuevo elemento p dentro del div
-        const messageParagraph = document.createElement('p');
+        const [senderId, actualMessage] = message.split('##');
 
-        // Si el mensaje fue enviado por el usuario, añade la clase 'bg-blue'; de lo contrario, déjalo blanco
-        if (event.sender === 'user') {
-            messageParagraph.classList.add('bg-blue', 'border', 'p-3', 'w-50', 'rounded-pill');
-        } else {
+        // Si el mensaje no proviene del propio cliente
+        if (senderId !== clientId) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('row', 'justify-content-end');
+
+            const messageParagraph = document.createElement('p');
             messageParagraph.classList.add('bg-white', 'border', 'p-3', 'w-50', 'rounded-pill');
-        }
+            messageParagraph.textContent = actualMessage;
 
-        messageParagraph.textContent = message;
-    
-        // Agrega el párrafo al div
-        messageDiv.appendChild(messageParagraph);
-    
-        // Agrega el div a la lista de mensajes
-        messagesList.appendChild(messageDiv); 
-        
-        
-        // Envía el mensaje a través del WebSocket
-        ws.send(message);
-        
-        // Limpia el campo de entrada después de enviar el mensaje
-        messageInput.value = '';
+            messageDiv.appendChild(messageParagraph);
+            messagesList.appendChild(messageDiv);
+        }
     };
 }
