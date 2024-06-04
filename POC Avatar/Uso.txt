@@ -1,0 +1,6 @@
+Obligatorio google chrome
+Arrancar servidor
+node server.js 
+
+Para acceder al chat 1 uso esta ruta http://localhost:3000/doctor.html
+Para acceder al chat 2 uso esta ruta http://localhost:3000/patient.html
