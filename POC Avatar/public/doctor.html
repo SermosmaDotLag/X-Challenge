@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chat</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="styles.css" rel="stylesheet">
+        <style>
+            #transcription{
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="navbar navbar-expand-lg navbar-light fixed-top bg-darkblue p-3 d-flex justify-content-between border-bottom border-dark">
+            <button class="btn btn-primary fs-4">📁</button>
+            <button class="btn btn-primary ml-auto fw-bold">Archivar chat</button>
+        </header>
+        <aside class="aside-scroll bg-aside border border-dark">
+            <div class="container options">
+                <div class="row">
+                    <div class="col border-bottom border-dark bg-items p-3">
+                        <h5 class="text-white">Item 1</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col border-bottom border-dark bg-items p-3">
+                        <h5 class="text-white">Item 2</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col border-bottom border-dark bg-items p-3">
+                        <h5 class="text-white">Item 3</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col border-bottom border-dark bg-items p-3">
+                        <h5 class="text-white">Item 4</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col border-bottom border-dark bg-items p-3">
+                        <h5 class="text-white">Item 5</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col border-bottom border-dark bg-items p-3">
+                        <h5 class="text-white">Item 6</h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col border-bottom border-dark bg-items p-3">
+                        <h5 class="text-white">Item 7</h5>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <div class="container-chat">
+            <div class="chat-box">
+                <ul id="messages"></ul>
+            </div>
+        </div>
+        <footer class="d-flex justify-content-end footer fixed-bottom bg-darkblue p-3">
+            <div id="messageForm" class="input-group">
+            <div id="transcription"></div>
+                <form id="messageForm">
+                    <input type="text" id="messageInput" class="form-control message-input" placeholder="Escribe tu mensaje...">
+                    <button type="submit">Enviar</button>
+                </form>
+                <button id="startButton" class="btn btn-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
+                        <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
+                        <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/>
+                    </svg>
+                </button>
+                <button id="stopButton" style="display:none;">Detener reconocimiento de voz</button>
+            </div>
+        </footer>  
+        <script src="chat1.js"></script>
+        <script>
+          initializeChat();
+        </script>      
+    </body>
+</html>
