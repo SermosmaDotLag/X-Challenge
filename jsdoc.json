@@ -1,0 +1,12 @@
+{
+  "source": {
+    "include": ["server.js", "public"],
+    "exclude": ["node_modules", "public/teachablemachine-image.min.js", "public/tf.min - copia.js", "public/tf.min.js"],
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "opts": {
+    "destination": "./docs",
+    "recurse": true
+  }
+}
