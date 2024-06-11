@@ -95,7 +95,7 @@ function initializeChat() {
      * Inicializa una conexión WebSocket.
      * @type {WebSocket}
      */
-    const ws = new WebSocket('ws://localhost:3000');
+    const ws = new WebSocket('ws://10.3.99.12:3000');
 
     // Maneja errores del WebSocket
     ws.onerror = function(event) {

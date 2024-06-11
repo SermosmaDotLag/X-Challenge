@@ -107,7 +107,8 @@ async function predict() {
 
     for (let i = 0; i < maxPredictions; i++) {
         // Si la probabilidad de la predicción es mayor a 0.5, considera la predicción como válida
-        if (prediction[i].probability > 0.5) {
+        console.log(prediction[i].probability)
+        if (prediction[i].probability > 0.7) {
             detectedLetter = prediction[i].className; // Obtiene el nombre de la clase predicha
             // Si la letra detectada está en la lista de letras y es diferente a la última letra detectada
             if (letters.includes(detectedLetter) && detectedLetter !== lastDetectedLetter) {

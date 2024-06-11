@@ -6,7 +6,7 @@ function initializeChat() {
      * Inicializa una conexión WebSocket a la dirección especificada.
      * @type {WebSocket}
      */
-    const ws = new WebSocket('ws://localhost:3000');
+    const ws = new WebSocket('ws://10.3.99.12:3000');
 
     /**
      * Genera un ID único para el cliente.
